@@ -10,8 +10,8 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                def srcDir = 'src'
                 script {
+                    def srcDir = 'src'
                     def diffOutput = sh(script: "git diff origin/master ${srcDir}", returnStdout: true).trim()
                     // Check if there are differences
                     if (diffOutput) {
