@@ -10,15 +10,15 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                // Initialize Terraform
+                def srcDir = 'src'
                 script {
-                    def changedFiles = sh(script: "git diff --name-only HEAD^ HEAD -- src/", returnStdout: true).trim()
-                    def shouldDeploy = changedFiles != ''
-
-                    if (shouldDeploy) {
-                        sh "ls src"
+                    def diffOutput = sh(script: "git diff origin/master ${srcDir}", returnStdout: true).trim()
+                    // Check if there are differences
+                    if (diffOutput) {
+                        echo "Changes detected in ${srcDir}:"
+                        echo "${diffOutput}"
                     } else {
-                        echo "No changes detected in src directory. Skipping Terraform plan."
+                        echo "No changes detected in ${srcDir}"
                     }
                 }
                 }
