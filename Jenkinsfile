@@ -39,23 +39,23 @@ pipeline {
         }
         
         // Example stage to demonstrate using the CHANGED_SUBDIRS variable
-        stage('Build or Deploy Changed Subdirectories') {
-            when {
-                expression { env.CHANGED_SUBDIRS != '' }
-            }
-            steps {
-                script {
-                    // Split the CHANGED_SUBDIRS variable back into a list
-                    def changedSubdirs = env.CHANGED_SUBDIRS.split(',')
+        // stage('Build or Deploy Changed Subdirectories') {
+        //     when {
+        //         expression { env.CHANGED_SUBDIRS != '' }
+        //     }
+        //     steps {
+        //         script {
+        //             // Split the CHANGED_SUBDIRS variable back into a list
+        //             def changedSubdirs = env.CHANGED_SUBDIRS.split(',')
                     
-                    // Perform actions on each changed subdirectory
-                    changedSubdirs.each { subdir ->
-                        // Example: Build or deploy each changed subdirectory
-                        echo "Building or deploying ${subdir}..."
-                        // Add your build or deployment steps here
-                    }
-                }
-            }
-        }
+        //             // Perform actions on each changed subdirectory
+        //             changedSubdirs.each { subdir ->
+        //                 // Example: Build or deploy each changed subdirectory
+        //                 echo "Building or deploying ${subdir}..."
+        //                 // Add your build or deployment steps here
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
