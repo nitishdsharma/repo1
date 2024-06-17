@@ -1,64 +1,57 @@
-// pipeline {
-//     agent any
-
-//     stages {
-//         stage('Checkout') {
-//             steps {
-//               git branch: 'master', url: 'https://github.com/nitishdsharma/repo1'
-//             }
-//         }
-
-//         stage('Terraform Init') {
-//             steps {
-//                 script {
-//                     def srcDir = 'src'
-//                     def currentCommit = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
-//                     def previousCommit = sh(script: "git rev-parse HEAD^", returnStdout: true).trim()
-//                     // def diffOutput = sh(script: "git diff origin/master ${srcDir}", returnStdout: true).trim()
-//                     def diffOutput = sh(script: "git diff ${previousCommit} ${currentCommit} -- ${srcDir}", returnStdout: true).trim()
-//                     // Check if there are differences
-//                     if (diffOutput) {
-//                         echo "Changes detected in ${srcDir} between ${previousCommit} and ${currentCommit}:"
-//                         echo "${diffOutput}"
-//                     } else {
-//                         echo "No changes detected in ${srcDir}"
-//                     }
-//                 }
-//                 }
-//             }
-//         }
-//       }
-
 pipeline {
     agent any
 
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the repository
+                // checkout scm
                 git branch: 'master', url: 'https://github.com/nitishdsharma/repo1'
             }
         }
-
-        stage('Terraform Init') {
+        
+        stage('Determine Changed Directories') {
             steps {
                 script {
-                    def srcDir = 'src'
-                    def currentCommit = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
-                    def previousCommit = sh(script: "git rev-parse HEAD^", returnStdout: true).trim()
+                    // Fetch latest changes
+                    sh 'git fetch --all'
                     
-                    // Get the diff between previous and current commit for the srcDir
-                    def diffOutput = sh(script: "git diff --name-only ${previousCommit} ${currentCommit} -- ${srcDir}", returnStdout: true).trim()
+                    // Get the list of directories with recent changes under src
+                    def changedDirs = sh(
+                        script: 'git diff --name-only HEAD~1 -- src/',
+                            returnStdout: true
+                    ).trim().split('\n')
                     
-                    // Check if there are differences
-                    if (diffOutput) {
-                        echo "Changes detected in ${srcDir} between ${previousCommit} and ${currentCommit}:"
-                        echo "${diffOutput}"
-                    } else {
-                        echo "No changes detected in ${srcDir}"
+                    // Print the changed directories for verification
+                    echo "Directories with recent changes:"
+                    changedDirs.each {
+                        echo it
+                    }
+                    
+                    // Set environment variable to pass the list to subsequent stages
+                    env.CHANGED_DIRS = changedDirs.join(',')
+                }
+            }
+        }
+        
+        // Example stage to demonstrate using the CHANGED_DIRS variable
+        stage('Build or Deploy Changed Directories') {
+            when {
+                expression { env.CHANGED_DIRS != '' }
+            }
+            steps {
+                script {
+                    // Split the CHANGED_DIRS variable back into a list
+                    def changedDirs = env.CHANGED_DIRS.split(',')
+                    
+                    // Perform actions on each changed directory
+                    changedDirs.each { dir ->
+                        // Example: Build or deploy each changed directory
+                        echo "Building or deploying ${dir}..."
+                        // Add your build or deployment steps here
                     }
                 }
             }
         }
     }
 }
-
